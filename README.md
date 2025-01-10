@@ -27,7 +27,7 @@ This project demonstrates a multi-agent framework for utilizing LLMs to solve re
 2. **Python**: Requires Python 3.7 or higher.
 3. **Dependencies**: Install dependencies via pip:
    ```bash
-   pip install ollama
+   pip install ollama gracio
    ```
 
 
