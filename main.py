@@ -1,6 +1,7 @@
+import gradio as gr
 import ollama
 
-# Inicializar el cliente Ollama. Victor Arbiol Martinez
+# Inicializar el cliente Ollama
 client = ollama.Client(host='http://localhost:11434')
 
 class Agent:
@@ -83,46 +84,55 @@ agente_informes = Agent(
 
 agentes = [agente_vuelos, agente_hoteles, agente_informes]
 
-# Definir la información de la búsqueda (esto en un escenario real vendría del usuario)
-destino = "Madrid - Paris"
-fecha_ida = "2024-12-15"
-fecha_vuelta = "2024-12-20"
+def ejecutar_busqueda(pregunta, fecha_ida_str, fecha_vuelta_str):
+    resultados = {}
+    shared_info = {}
+    compartir = True
 
-# Definir las tareas
-tarea_vuelo = Task(
-    description=f"Busca vuelo más barato a {destino} para {fecha_ida}/{fecha_vuelta}.",
-    agent=agente_vuelos
-)
+    # Definir las tareas utilizando la información del usuario
+    tarea_vuelo = Task(
+        description=f"Basado en la pregunta: '{pregunta}'. Busca vuelo más barato para el destino en la pregunta para {fecha_ida_str}/{fecha_vuelta_str}.",
+        agent=agente_vuelos
+    )
 
-tarea_hotel = Task(
-    description=f"Busca hotel más barato para {fecha_ida}/{fecha_vuelta}.",
-    agent=agente_hoteles
-)
+    tarea_hotel = Task(
+        description=f"Basado en la pregunta: '{pregunta}'. Busca hotel más barato para las fechas {fecha_ida_str}/{fecha_vuelta_str}.",
+        agent=agente_hoteles
+    )
 
-tarea_informe = Task(
-    description="Genera un informe con la mejor opción de vuelo y hotel.",
-    agent=agente_informes
-)
+    tarea_informe = Task(
+        description=f"Basado en la pregunta: '{pregunta}'. Genera un informe con la mejor opción de vuelo y hotel para las fechas {fecha_ida_str}/{fecha_vuelta_str}.",
+        agent=agente_informes
+    )
 
-tareas = [tarea_vuelo, tarea_hotel, tarea_informe]
+    tareas = [tarea_vuelo, tarea_hotel, tarea_informe]
 
-# Simular la ejecución del equipo
-resultados = {}
-shared_info = {}  # Usaremos un diccionario para almacenar los resultados de cada agente
-compartir = True  # Cambia a False para que los agentes trabajen de manera independiente
+    for tarea in tareas:
+        resultado = tarea.agent.execute_task(tarea.description, shared_info)
+        resultados[tarea.agent.role] = resultado
+        if compartir:
+            shared_info[tarea.agent.role] = resultado
 
-for tarea in tareas:
-    resultado = tarea.agent.execute_task(tarea.description, shared_info)
-    resultados[tarea.agent.role] = resultado
-    if compartir:
-        shared_info[tarea.agent.role] = resultado
+    # Formatear los resultados para la interfaz de Gradio en Markdown con estilos
+    output_text = "<div style='font-size: 1.1em;'>\n"  # Aumentar el tamaño de la fuente general
+    output_text += "<h2 style='color: #007bff;'>Resultados de la Búsqueda</h2>\n\n"  # Título en azul
 
-# Mostrar los resultados
-if compartir:
-    print("\n--- Resultados Compartidos ---")
     for role, resultado in resultados.items():
-        print(f"{role}: {resultado}")
-else:
-    print("\n--- Resultados Independientes ---")
-    for role, resultado in resultados.items():
-        print(f"{role}: {resultado}")
+        output_text += f"<p><span style='font-weight: bold; color: #28a745;'>{role}:</span> <span style='color: #dc3545;'>{resultado}</span></p>\n\n" # Rol en verde, resultado en rojo
+    output_text += "</div>"
+
+    return output_text
+
+if __name__ == "__main__":
+    iface = gr.Interface(
+        fn=ejecutar_busqueda,
+        inputs=[
+            gr.Textbox(label="Pregunta sobre tu viaje (ej. Quiero viajar de Madrid a Paris)", lines=2),
+            gr.Textbox(label="Fecha de ida (YYYY-MM-DD)"),
+            gr.Textbox(label="Fecha de vuelta (YYYY-MM-DD)")
+        ],
+        outputs=gr.Markdown(label="Resultados de la búsqueda"),
+        title="Agente de Búsqueda de Viajes",
+        description="Introduce la pregunta sobre tu viaje y las fechas para encontrar las mejores ofertas."
+    )
+    iface.launch()
