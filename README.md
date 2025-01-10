@@ -2,6 +2,8 @@
 
 Esto es un ejemplo de como usar tres agentes de IA, en una agencia de viajes, esta aplicación al cual no es profesional, solo un toy un juguete.
 
+Ejecutar la app: python main.py
+
 ![image](https://github.com/user-attachments/assets/d2127594-af57-4965-b748-4af76b9be0ac)
 
 
