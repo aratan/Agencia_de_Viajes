@@ -4,7 +4,8 @@ Esto es un ejemplo de como usar tres agentes de IA, en una agencia de viajes, es
 
 Ejecutar la app: python main.py
 
-![image](https://github.com/user-attachments/assets/d2127594-af57-4965-b748-4af76b9be0ac)
+![image](https://github.com/user-attachments/assets/d02eaea6-84f8-46cb-92ac-7c1d0fd28665)
+
 
 
 # Multi-Agent Framework for Automated Task Execution with LLMs
