@@ -28,7 +28,7 @@ class Agent:
         prompt = " ".join(prompt_parts)
 
         # Añadida la temperatura al generar el texto usando 'options'
-        response = client.generate(model="llama3", prompt=prompt, options={'temperature': self.temperature})
+        response = client.generate(model="falcon3:10b", prompt=prompt, options={'temperature': self.temperature})
         return response['response'].strip()
 
     def _read_data(self):
@@ -114,12 +114,37 @@ def ejecutar_busqueda(pregunta, fecha_ida_str, fecha_vuelta_str):
             shared_info[tarea.agent.role] = resultado
 
     # Formatear los resultados para la interfaz de Gradio en Markdown con estilos
-    output_text = "<div style='font-size: 1.1em;'>\n"  # Aumentar el tamaño de la fuente general
-    output_text += "<h2 style='color: #007bff;'>Resultados de la Búsqueda</h2>\n\n"  # Título en azul
-
-    for role, resultado in resultados.items():
-        output_text += f"<p><span style='font-weight: bold; color: #28a745;'>{role}:</span> <span style='color: #dc3545;'>{resultado}</span></p>\n\n" # Rol en verde, resultado en rojo
-    output_text += "</div>"
+    output_text = """
+    <div style='font-family: Arial, sans-serif; color: #333; line-height: 1.6;'>
+        <h2 style='color: #0056b3; border-bottom: 2px solid #0056b3; padding-bottom: 5px; margin-bottom: 20px;'>
+            Resumen de tu Viaje
+        </h2>
+        <p style='margin-bottom: 10px;'>A continuación, encontrarás las mejores opciones encontradas para tu viaje:</p>
+        <div style='background-color: #f9f9f9; padding: 15px; border-left: 5px solid #007bff; margin-bottom: 15px;'>
+            <h3 style='color: #007bff; margin-top: 0;'>
+                <i class="fas fa-plane" style='margin-right: 5px;'></i> Mejor Opción de Vuelo
+            </h3>
+            <p><strong>Información:</strong> <span style='color: #555;'>{agente_vuelos_resultado}</span></p>
+        </div>
+        <div style='background-color: #f9f9f9; padding: 15px; border-left: 5px solid #28a745; margin-bottom: 15px;'>
+            <h3 style='color: #28a745; margin-top: 0;'>
+                <i class="fas fa-hotel" style='margin-right: 5px;'></i> Mejor Opción de Hotel
+            </h3>
+            <p><strong>Información:</strong> <span style='color: #555;'>{agente_hoteles_resultado}</span></p>
+        </div>
+        <div style='margin-top: 20px; padding: 15px; background-color: #e8f0fe; border-radius: 5px;'>
+            <h4 style='color: #0056b3;'>Informe Adicional</h4>
+            <p style='color: #555;'>{agente_informes_resultado}</p>
+        </div>
+        <p style='font-size: 0.9em; color: #777; margin-top: 20px;'>
+            ¡Esperamos que esta información te sea útil para planificar tu viaje!
+        </p>
+    </div>
+    """.format(
+        agente_vuelos_resultado=resultados.get("Agente de Búsqueda de Vuelos", "No se encontraron resultados."),
+        agente_hoteles_resultado=resultados.get("Agente de Búsqueda de Hoteles", "No se encontraron resultados."),
+        agente_informes_resultado=resultados.get("Agente de Informes de Viaje", "No se generó informe.")
+    )
 
     return output_text
 
@@ -128,11 +153,15 @@ if __name__ == "__main__":
         fn=ejecutar_busqueda,
         inputs=[
             gr.Textbox(label="Pregunta sobre tu viaje (ej. Quiero viajar de Madrid a Paris)", lines=2),
-            gr.Textbox(label="Fecha de ida (YYYY-MM-DD)"),
-            gr.Textbox(label="Fecha de vuelta (YYYY-MM-DD)")
+            gr.Textbox(label="Fecha de ida (YYYY-MM-DD)", placeholder="YYYY-MM-DD"),
+            gr.Textbox(label="Fecha de vuelta (YYYY-MM-DD)", placeholder="YYYY-MM-DD")
         ],
         outputs=gr.Markdown(label="Resultados de la búsqueda"),
-        title="Agente de Búsqueda de Viajes",
-        description="Introduce la pregunta sobre tu viaje y las fechas para encontrar las mejores ofertas."
+        title="<h1 style='color: #007bff; text-align: center;'>Tu Asistente de Viajes Personalizado</h1>",
+        description="""
+        <div style='text-align: center;'>
+            Bienvenido a tu agente de búsqueda de viajes. Introduce tu destino y fechas de viaje para encontrar las mejores ofertas en vuelos y hoteles.
+        </div>
+        """,
     )
     iface.launch()
