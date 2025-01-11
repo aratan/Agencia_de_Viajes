@@ -149,6 +149,23 @@ def ejecutar_busqueda(pregunta, fecha_ida_str, fecha_vuelta_str):
     return output_text
 
 if __name__ == "__main__":
+    custom_css = """
+    body,
+    .gradio-container {
+        background-color: white !important;
+        color: black !important;
+    }
+    .sidebar {
+        background-color: white !important;
+    }
+    .form,
+    .output {
+        background-color: #f0f0f0 !important; /* Gris claro */
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    """
     iface = gr.Interface(
         fn=ejecutar_busqueda,
         inputs=[
@@ -160,8 +177,12 @@ if __name__ == "__main__":
         title="<h1 style='color: #007bff; text-align: center;'>Tu Asistente de Viajes Personalizado</h1>",
         description="""
         <div style='text-align: center;'>
+            <img src="https://tse2.mm.bing.net/th?id=OIP.KySxO7qdx-aFE-IZ8hBgSQHaE-&rs=1&pid=ImgDetMain" style="display: block; margin-left: auto; margin-right: auto; width: 25%; height: 25%;">
+        </div>
+        <div style='text-align: center;'>
             Bienvenido a tu agente de búsqueda de viajes. Introduce tu destino y fechas de viaje para encontrar las mejores ofertas en vuelos y hoteles.
         </div>
         """,
+        head=f"<style>{custom_css}</style>"
     )
     iface.launch()
